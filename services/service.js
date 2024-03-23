@@ -69,8 +69,12 @@ const exchangeObject = [
 ];
 
 const request = async (baseUrl) => {
-  const result = await (await axios.get(baseUrl)).data;
-  return result;
+  try {
+    const result = await (await axios.get(baseUrl)).data;
+    return result;
+  } catch (e) {
+    return [];
+  }
 };
 
 async function fetchBulkArray(
@@ -405,7 +409,7 @@ async function fetchBulkArray(
       });
 
       const output = Object.values(groupedData).map((entry) => ({
-        fundingRate: (parseFloat(entry.fundingRate)* 100).toFixed(3),
+        fundingRate: (parseFloat(entry.fundingRate) * 100).toFixed(3),
         fundingDate: moment(parseInt(entry.fundingTime)).format("DD/MM"),
       }));
       // process the response and
@@ -441,7 +445,7 @@ async function fetchBulkArray(
         }
       });
       const output = Object.values(groupedData).map((entry) => ({
-        fundingRate: (parseFloat(entry.fundingRate)* 100).toFixed(3),
+        fundingRate: (parseFloat(entry.fundingRate) * 100).toFixed(3),
         fundingDate: moment(entry.settleTime).format("DD/MM"),
       }));
 
@@ -474,7 +478,7 @@ async function fetchBulkArray(
           )
         ) {
           fundingRatesByDate[date] = {
-            fundingRate: (parseFloat(rate)* 100).toFixed(3),
+            fundingRate: (parseFloat(rate) * 100).toFixed(3),
             fundingDate: date,
           };
         }
@@ -522,7 +526,7 @@ async function fetchBulkArray(
           )
         ) {
           groupedByDate[formattedDate] = {
-            fundingRate: (parseFloat(item.fundingRate)* 100).toFixed(3),
+            fundingRate: (parseFloat(item.fundingRate) * 100).toFixed(3),
             fundingDate: formattedDate,
           };
         }
@@ -567,7 +571,7 @@ async function fetchBulkArray(
 
       // Prepare output in desired format
       const output = Object.values(groupedData).map((entry) => ({
-        fundingRate: (parseFloat(entry.fundingRate)* 100).toFixed(3),
+        fundingRate: (parseFloat(entry.fundingRate) * 100).toFixed(3),
         fundingDate: formatTimestamp(entry.timepoint),
       }));
       finalDerivativeFundingRateHistory.push({
