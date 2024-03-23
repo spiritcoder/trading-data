@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Home</title>
+
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+    />
+    <style>
+      header {
+        display: flex;
+        /* justify-content: space-between; */
+        align-items: center;
+        text-align: center;
+        padding: 10px 20px;
+        background-color: #f4f4f4;
+      }
+      nav ul {
+        display: flex;
+        list-style: none;
+      }
+      nav ul li {
+        margin-right: 20px;
+      }
+    </style>
+  </head>
+  <body class="container">
+    <header>
+      <div class="row">
+        <div class="col">
+          <h3>Aggregator</h3>
+        </div>
+      </div>
+      <!-- <nav>
+        <ul>
+          <li><a href="/home">Home</a></li>
+          <li><a href="/about">About</a></li>
+          <li><a href="/services">Services</a></li>
+          <li><a href="/contact">Contact</a></li>
+          <li><a href="/login">Login</a></li>
+        </ul>
+      </nav> -->
+    </header>
+
+    <div class="jumbotron">
+      <form action="" method="get">
+        <div class="row">
+          <div class="col-md-5">
+            <label for="coins">Trading Pairs:</label>
+            <select name="coins" id="coins" class="form-control" multiple>
+              <option value="BTC">BTC-USDT</option>
+              <option value="ETH">ETH-USDT</option>
+              <option value="BNB">BNB-USDT</option>
+              <option value="SOL">SOL-USDT</option>
+              <option value="ADA">ADA-USDT</option>
+              <option value="DOT">DOT-USDT</option>
+              <option value="LINK">LINK-USDT</option>
+              <option value="LUNA">LUNA-USDT</option>
+              <option value="AVAX">AVAX-USDT</option>
+              <option value="MATIC">MATIC-USDT</option>
+            </select>
+          </div>
+          <div class="col-md-5">
+            <label for="exchanges">Exchanges:</label>
+            <select
+              name="exchanges"
+              id="exchanges"
+              class="form-control"
+              multiple
+            >
+              <option value="kucoin">KuCoin</option>
+              <option value="huobi">Huobi</option>
+              <option value="mexc">MEXC</option>
+              <option value="bybit">Bybit</option>
+              <option value="okx">OKX</option>
+              <!-- Add more options as needed -->
+            </select>
+          </div>
+          <div class="col-md-2 align-items-center justify-content-center">
+            <button type="submit" class="btn btn-primary btn-block">
+              Submit
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <table class="table table-bordered table-striped">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Pair</th>
+          <th>Price</th>
+          <% const uniqueDates = []; %> <% data.forEach(item => { %> <%
+          item.history.forEach(historyItem => { %> <% if
+          (!uniqueDates.includes(historyItem.fundingDate)) { %> <%
+          uniqueDates.push(historyItem.fundingDate); %>
+          <th><%= historyItem.fundingDate %></th>
+          <% } %> <% }); %> <% }); %>
+        </tr>
+      </thead>
+      <tbody>
+        <% data.forEach(item => { %>
+        <tr>
+          <td><%= item.name %></td>
+          <td><%= item.pair %></td>
+          <td><%= item.price %></td>
+          <% uniqueDates.forEach(date => { %> <% const historyItem =
+          item.history.find(hist => hist.fundingDate === date); %>
+          <td><%= historyItem ? historyItem.fundingRate + '%' : 'N/A' %></td>
+          <% }); %>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+
+    <script>
+      let sortOrder = 1; // 1 for ascending, -1 for descending
+      let sortColumn = 0; // Default sort by first column
+
+      function sortTable(columnIndex) {
+        const table = document.querySelector("table");
+        const tbody = table.querySelector("tbody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+
+        // Toggle sorting order if the same column is clicked
+        if (sortColumn === columnIndex) {
+          sortOrder *= -1;
+        } else {
+          // Reset sort order icon for previously sorted column
+          const prevSortIcon = document.getElementById(
+            `col${sortColumn}SortIcon`
+          );
+          if (prevSortIcon) {
+            prevSortIcon.innerHTML = "";
+          }
+          sortOrder = 1; // Reset to default ascending order
+          sortColumn = columnIndex;
+        }
+
+        // Update sort icon
+        const sortIcon = document.getElementById(`col${columnIndex}SortIcon`);
+        if (sortIcon) {
+          if (sortOrder === 1) {
+            sortIcon.innerHTML = "&uarr;"; // Up arrow
+          } else {
+            sortIcon.innerHTML = "&darr;"; // Down arrow
+          }
+        }
+
+        // Sort rows
+        rows.sort((a, b) => {
+          const textA = a.cells[columnIndex].textContent.trim();
+          const textB = b.cells[columnIndex].textContent.trim();
+
+          if (!isNaN(textA) && !isNaN(textB)) {
+            return sortOrder * (parseFloat(textA) - parseFloat(textB));
+          } else {
+            return sortOrder * textA.localeCompare(textB);
+          }
+        });
+
+        // Re-append sorted rows
+        tbody.innerHTML = "";
+        rows.forEach((row) => tbody.appendChild(row));
+      }
+    </script>
+  </body>
+</html>
