@@ -390,7 +390,7 @@ async function fetchBulkArray(
 
       const fourteenDaysAgo = moment().subtract(14, "days");
 
-      const filteredData = response?.response?.data.filter((entry) => {
+      const filteredData = response?.response?.data?.filter((entry) => {
         const fundingTime = moment(parseInt(entry.fundingTime));
         return fundingTime.isSameOrAfter(fourteenDaysAgo);
       });
@@ -429,7 +429,7 @@ async function fetchBulkArray(
       const today = moment().startOf("day");
       const last14Days = moment().subtract(14, "days").startOf("day");
 
-      const filteredData = resultList.filter((item) => {
+      const filteredData = resultList?.filter((item) => {
         const fundingDate = moment(item.settleTime);
         return fundingDate.isBetween(last14Days, today, "day", "[]");
       });
@@ -461,7 +461,7 @@ async function fetchBulkArray(
 
       // Extracting funding rates for the last 14 days
       const fourteenDaysAgo = moment().subtract(14, "days");
-      const filteredData = response?.response?.data?.data.filter((entry) =>
+      const filteredData = response?.response?.data?.data?.filter((entry) =>
         moment(parseInt(entry.funding_time)).isAfter(fourteenDaysAgo)
       );
 
@@ -507,7 +507,7 @@ async function fetchBulkArray(
       const fourteenDaysAgo = moment().subtract(14, "days");
 
       // Filter funding rates within the last 14 days
-      const filteredData = list.filter((item) =>
+      const filteredData = list?.filter((item) =>
         moment(parseInt(item.fundingRateTimestamp)).isBetween(
           fourteenDaysAgo,
           today
