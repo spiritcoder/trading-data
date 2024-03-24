@@ -82,8 +82,6 @@ async function fetchBulkArray(
   coins = ["btc", "eth", "bnb", "sol"]
 ) {
   const spotBaseUrls = [];
-  //   const derivativeBaseURLs = [];
-  //   const derivativeFundingRateBaseURLs = [];
   const derivativeFundingRateHistoryBaseURLs = [];
 
   exchanges.map((exchange) => {
@@ -91,16 +89,12 @@ async function fetchBulkArray(
       foundObject.name.toLowerCase().includes(exchange)
     );
     spotBaseUrls.push(exchangefound.spotURL);
-    // derivativeBaseURLs.push(exchangefound.derivativeURL);
-    // derivativeFundingRateBaseURLs.push(exchangefound.derivativeFundingRateURL);
     derivativeFundingRateHistoryBaseURLs.push(
       exchangefound.derivativeFundingRateHistoryURL
     );
   });
 
   const spotUrls = [];
-  //   const derivativeURLs = [];
-  //   const derivativeFundingRateURLs = [];
   const derivativeFundingRateHistoryURLs = [];
 
   // now loop through coins, then loop through urls to add the spot urls
@@ -120,38 +114,6 @@ async function fetchBulkArray(
 
       spotUrls.push(newUrl);
     });
-
-    // derivativeBaseURLs.map((baseUrl) => {
-    //   let match = baseUrl.match(/CHANGETOKEN/i);
-
-    //   let newSymbol;
-
-    //   if (match[0] === match[0].toUpperCase()) {
-    //     newSymbol = coin.toUpperCase();
-    //   } else {
-    //     newSymbol = coin.toLowerCase();
-    //   }
-
-    //   let newUrl = baseUrl.replace(/CHANGETOKEN/i, newSymbol);
-
-    //   derivativeURLs.push(newUrl);
-    // });
-
-    // derivativeFundingRateBaseURLs.map((baseUrl) => {
-    //   let match = baseUrl.match(/CHANGETOKEN/i);
-
-    //   let newSymbol;
-
-    //   if (match[0] === match[0].toUpperCase()) {
-    //     newSymbol = coin.toUpperCase();
-    //   } else {
-    //     newSymbol = coin.toLowerCase();
-    //   }
-
-    //   let newUrl = baseUrl.replace(/CHANGETOKEN/i, newSymbol);
-
-    //   derivativeFundingRateURLs.push(newUrl);
-    // });
 
     derivativeFundingRateHistoryBaseURLs.map((baseUrl) => {
       let match = baseUrl.match(/CHANGETOKEN/i);
@@ -187,20 +149,7 @@ async function fetchBulkArray(
     })
   );
 
-  //   const fetchDerivativeDetails = await Promise.all(
-  //     derivativeURLs.map(async (url) => {
-  //       const response = await request(url);
-  //       return { url, response };
-  //     })
-  //   );
-
-  //   const fetchDerivativeFetchRateDetails = await Promise.all(
-  //     derivativeFundingRateURLs.map(async (url) => {
-  //       const response = await request(url);
-  //       return { url, response };
-  //     })
-  //   );
-
+  
   const fetchDerivativeFetchRateHistoryDetails = await Promise.all(
     derivativeFundingRateHistoryURLs.map(async (url) => {
       const response = await request(url);
@@ -209,8 +158,6 @@ async function fetchBulkArray(
   );
 
   const finalSpot = [];
-  //   const finalDerivative = [];
-  //   const finalDerivativeFundingRate = [];
   const finalDerivativeFundingRateHistory = [];
 
   fetchSpotDetails.map((response) => {
@@ -265,122 +212,6 @@ async function fetchBulkArray(
     }
   });
 
-  //   fetchDerivativeDetails.map((response) => {
-  //     if (response.url.includes("okx")) {
-  //       const regex = /instId=([^&]+)/;
-
-  //       const match = response.url.match(regex);
-  //       const symbol = match[1].replace("-SWAP", "");
-  //       finalDerivative.push({
-  //         name: "OKX",
-  //         pair: symbol.toUpperCase(),
-  //         price: response?.response?.data[0]?.last,
-  //       });
-  //     } else if (response.url.includes("mexc")) {
-  //       const regex = /[^/]+$/;
-
-  //       const match = response.url.match(regex);
-  //       const symbol = match[0].replace(/_/g, "-");
-  //       finalDerivative.push({
-  //         name: "MEXC",
-  //         pair: symbol.toUpperCase(),
-  //         price: response?.response?.data?.indexPrice,
-  //       });
-  //     } else if (response.url.includes("hbdm")) {
-  //       const regex = /contract_code=([^&]+)/;
-
-  //       const match = response.url.match(regex);
-  //       finalDerivative.push({
-  //         name: "HUOBI",
-  //         pair: match[1].toUpperCase(),
-  //         price: response?.response?.tick?.data[0]?.price,
-  //       });
-  //     } else if (response.url.includes("bybit")) {
-  //       const regex = /symbol=([^&]+)/;
-
-  //       // Match the symbol value using the regex
-  //       const match = response.url.match(regex);
-  //       const symbol = match[1].replace(/(USDT|usdt)/, "-$1");
-  //       finalDerivative.push({
-  //         name: "BYBIT",
-  //         pair: symbol.toUpperCase(),
-  //         price: response?.response?.result?.list[0]?.price,
-  //       });
-  //     } else if (response.url.includes("kucoin")) {
-  //       const regex = /symbol=([^&]+)/;
-
-  //       // Match the substring using the regex
-  //       const match = response.url.match(regex);
-  //       const symbol = match[1].replace(/(USDT)M/, "-$1");
-  //       finalDerivative.push({
-  //         name: "KUCOIN",
-  //         pair: symbol.toUpperCase(),
-  //         price: response?.response?.data?.price,
-  //       });
-  //     }
-  //   });
-
-  //   fetchDerivativeFetchRateDetails.map((response) => {
-  //     if (response.url.includes("okx")) {
-  //       const regex = /instId=([^&]+)/;
-
-  //       const match = response.url.match(regex);
-  //       const symmbol = match[1].replace("-SWAP", "");
-  //       finalDerivativeFundingRate.push({
-  //         name: "OKX",
-  //         pair: symmbol.toUpperCase(),
-  //         rate: (
-  //           parseFloat(response?.response?.data[0]?.fundingRate) * 100
-  //         ).toFixed(3),
-  //       });
-  //     } else if (response.url.includes("mexc")) {
-  //       const regex = /[^/]+$/;
-
-  //       const match = response.url.match(regex);
-  //       const symbol = match[0].replace(/_/g, "-");
-  //       finalDerivativeFundingRate.push({
-  //         name: "MEXC",
-  //         pair: symbol.toUpperCase(),
-  //         rate: (parseFloat(response?.response?.data?.fundingRate) * 100).toFixed(
-  //           3
-  //         ),
-  //       });
-  //     } else if (response.url.includes("hbdm")) {
-  //       const regex = /contract_code=([^&]+)/;
-
-  //       const match = response.url.match(regex);
-  //       finalDerivativeFundingRate.push({
-  //         name: "HUOBI",
-  //         pair: match[1].toUpperCase(),
-  //         rate: (
-  //           parseFloat(response?.response?.data?.funding_rate) * 100
-  //         ).toFixed(3),
-  //       });
-  //     } else if (response.url.includes("bybit")) {
-  //       const regex = /symbol=([^&]+)/;
-
-  //       // Match the symbol value using the regex
-  //       const match = response.url.match(regex);
-  //       const symbol = match[1].replace(/(USDT|usdt)/, "-$1");
-  //       finalDerivativeFundingRate.push({
-  //         name: "BYBIT",
-  //         pair: symbol.toUpperCase(),
-  //         rate: (
-  //           parseFloat(response?.response?.result?.list[0]?.fundingRate) * 100
-  //         ).toFixed(3),
-  //       });
-  //     } else if (response.url.includes("kucoin")) {
-  //       const regex = /funding-rate\/([^\/]+)/i;
-  //       const match = response.url.match(regex);
-  //       const symbol = match[1].replace(/(USDT)M/, "-$1");
-  //       finalDerivativeFundingRate.push({
-  //         name: "KUCOIN",
-  //         pair: symbol.toUpperCase(),
-  //         rate: (parseFloat(response?.response?.data?.value) * 100).toFixed(3),
-  //       });
-  //     }
-  //   });
-
   fetchDerivativeFetchRateHistoryDetails.map((response) => {
     if (response.url.includes("okx")) {
       const regex = /instId=([^&]+)/;
@@ -400,8 +231,8 @@ async function fetchBulkArray(
         const fundingDate = moment(parseInt(entry.fundingTime)).format("DD/MM");
         if (
           !(fundingDate in groupedData) ||
-          moment(groupedData[fundingDate].fundingTime).isBefore(
-            moment(entry.fundingTime)
+          moment(parseInt(groupedData[fundingDate].fundingTime)).isBefore(
+            moment(parseInt(entry.fundingTime))
           )
         ) {
           groupedData[fundingDate] = entry;
@@ -581,44 +412,6 @@ async function fetchBulkArray(
       });
     }
   });
-  //   console.log(JSON.stringify(finalDerivativeFundingRateHistory));
-  //   console.log(finalSpot)
-
-  //   const combinedData = {};
-  //   const mergeObjects = (obj1, obj2) => {
-  //     return {
-  //       pair: obj1.pair,
-  //       spotPrice: obj1.price,
-  //       futuresPrice: obj2.price,
-  //       fundingRate: obj2.rate,
-  //     };
-  //   };
-
-  //   // Merge spot and futures data
-  //   finalSpot.forEach((spotItem) => {
-  //     const futuresItem = finalDerivative.find(
-  //       (item) => item.name === spotItem.name && item.pair === spotItem.pair
-  //     );
-  //     if (futuresItem) {
-  //       if (!combinedData[spotItem.name]) {
-  //         combinedData[spotItem.name] = [];
-  //       }
-  //       combinedData[spotItem.name].push(mergeObjects(spotItem, futuresItem));
-  //     }
-  //   });
-
-  //   // Merge funding rate data
-  //   Object.keys(combinedData).forEach((exchangeName) => {
-  //     combinedData[exchangeName].forEach((pairObj) => {
-  //       const fundingRateItem = finalDerivativeFundingRate.find(
-  //         (item) => item.name === exchangeName && item.pair === pairObj.pair
-  //       );
-  //       if (fundingRateItem) {
-  //         pairObj.fundingRate = fundingRateItem.rate;
-  //       }
-  //     });
-  //   });
-
   const combinedData = finalSpot.map((spot) => {
     const historyItem = finalDerivativeFundingRateHistory.find(
       (item) => item.pair === spot.pair && item.name == spot.name
@@ -633,10 +426,5 @@ async function fetchBulkArray(
 
   return combinedData;
 }
-
-// fetchBulkArray(
-//   ["huobi", "okx", "mexc", "bybit", "kucoin"],
-//   ["btc", "eth", "bnb", "sol"]
-// );
 
 module.exports = fetchBulkArray;
