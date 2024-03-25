@@ -5,7 +5,7 @@ const path = require("path");
 const fetchBulkArray  = require("./services/service.js");
 
 const app = express();
-const port = 80;
+const port = 3001;
 
 app.use(cors());
 
