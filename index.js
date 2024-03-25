@@ -17,18 +17,18 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/", async (req, res) => {
-  let exchanges = req.query.exchanges;
-  let coins = req.query.coins;
+  let exchange = req.query.exchange;
+  let duration = req.query.duration;
 
-  coins = Array.isArray(coins) ? coins : [coins];
-  exchanges = Array.isArray(exchanges) ? exchanges : [exchanges];
+  exchange = Array.isArray(exchange) ? exchange : [exchange];
+
   let data;
   
-  if(exchanges == '' || coins == '' || exchanges == undefined || coins == undefined){
+  if(exchange == '' || duration == '' || exchange == undefined || duration == undefined){
     data = await fetchBulkArray();
   }
   else {
-    data = await fetchBulkArray(exchanges, coins);
+    data = await fetchBulkArray(exchange, duration);
   }
 
   res.render("index", { data });

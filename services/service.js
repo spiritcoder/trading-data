@@ -67,6 +67,98 @@ const exchangeObject = [
       "https://api-futures.kucoin.com/api/v1/contract/funding-rates?symbol=CHANGETOKENUSDTM&from=1700310700000&to=1702310700000",
   },
 ];
+const coins = [
+  "BTC",
+  "ETH",
+  "BNB",
+  "SOL",
+  "ADA",
+  "XRP",
+  "DOT",
+  "DOGE",
+  "LUNA",
+  "AVAX",
+  "LINK",
+  "MATIC",
+  "XLM",
+  "SHIB",
+  "VET",
+  "FTT",
+  "ALGO",
+  "ATOM",
+  "TRX",
+  "EGLD",
+  "SOL",
+  "AAVE",
+  "UNI",
+  "FIL",
+  "GRT",
+  "EOS",
+  "XTZ",
+  "NEO",
+  "THETA",
+  "XMR",
+  "MIOTA",
+  "MKR",
+  "COMP",
+  "HBAR",
+  "DCR",
+  "WAVES",
+  "ICP",
+  "KSM",
+  "SNX",
+  "ENJ",
+  "NANO",
+  "TFUEL",
+  "RUNE",
+  "SUSHI",
+  "QTUM",
+  "BAT",
+  "HNT",
+  "DASH",
+  "ETC",
+  "FLOW",
+  "ICX",
+  "CAKE",
+  "ZEC",
+  "MANA",
+  "STX",
+  "ZIL",
+  "CHZ",
+  "CRV",
+  "RSR",
+  "ANKR",
+  "GALA",
+  "REN",
+  "BNT",
+  "ONT",
+  "ONE",
+  "FTM",
+  "SAND",
+  "LRC",
+  "OMG",
+  "XEM",
+  "UMA",
+  "KAVA",
+  "CELO",
+  "MIR",
+  "RVN",
+  "OCEAN",
+  "ALICE",
+  "YFI",
+  "WAXP",
+  "AR",
+  "DGB",
+  "STORJ",
+  "BTG",
+  "VGX",
+  "GNO",
+  "REV",
+  "RLC",
+  "HBTC",
+  "CKB",
+  "XVS",
+];
 
 const request = async (baseUrl) => {
   try {
@@ -78,42 +170,24 @@ const request = async (baseUrl) => {
 };
 
 async function fetchBulkArray(
-  exchanges = ["huobi", "okx", "mexc", "bybit", "kucoin"],
-  coins = ["btc", "eth", "bnb", "sol"]
+  exchanges = ["kucoin"], // made kucoin the default. So the system will not be overwhelmed
+  duration = 14
 ) {
-  const spotBaseUrls = [];
   const derivativeFundingRateHistoryBaseURLs = [];
 
   exchanges.map((exchange) => {
     const exchangefound = exchangeObject.find((foundObject) =>
       foundObject.name.toLowerCase().includes(exchange)
     );
-    spotBaseUrls.push(exchangefound.spotURL);
     derivativeFundingRateHistoryBaseURLs.push(
       exchangefound.derivativeFundingRateHistoryURL
     );
   });
 
-  const spotUrls = [];
   const derivativeFundingRateHistoryURLs = [];
 
   // now loop through coins, then loop through urls to add the spot urls
   coins.map((coin) => {
-    spotBaseUrls.map((baseUrl) => {
-      let match = baseUrl.match(/CHANGETOKEN/i);
-
-      let newSymbol;
-
-      if (match[0] === match[0].toUpperCase()) {
-        newSymbol = coin.toUpperCase();
-      } else {
-        newSymbol = coin.toLowerCase();
-      }
-
-      let newUrl = baseUrl.replace(/CHANGETOKEN/i, newSymbol);
-
-      spotUrls.push(newUrl);
-    });
 
     derivativeFundingRateHistoryBaseURLs.map((baseUrl) => {
       let match = baseUrl.match(/CHANGETOKEN/i);
@@ -131,7 +205,7 @@ async function fetchBulkArray(
       //if url is kucoin, we set the correct from and to values
       if (baseUrl.includes("kucoin")) {
         const nowTimestamp = moment().valueOf();
-        const last14DaysTimestamp = moment().subtract(14, "days").valueOf();
+        const last14DaysTimestamp = moment().subtract(parseInt(duration), "days").valueOf();
 
         newUrl = newUrl
           .replace(/from=\d+/g, `from=${last14DaysTimestamp}`)
@@ -142,14 +216,8 @@ async function fetchBulkArray(
     });
   });
 
-  const fetchSpotDetails = await Promise.all(
-    spotUrls.map(async (url) => {
-      const response = await request(url);
-      return { url, response };
-    })
-  );
 
-  
+
   const fetchDerivativeFetchRateHistoryDetails = await Promise.all(
     derivativeFundingRateHistoryURLs.map(async (url) => {
       const response = await request(url);
@@ -157,60 +225,7 @@ async function fetchBulkArray(
     })
   );
 
-  const finalSpot = [];
   const finalDerivativeFundingRateHistory = [];
-
-  fetchSpotDetails.map((response) => {
-    if (response.url.includes("okx")) {
-      const regex = /instId=([^&]+)/;
-
-      const match = response.url.match(regex);
-      const symmbol = match[1].replace("-SWAP", "");
-      finalSpot.push({
-        name: "OKX",
-        pair: symmbol.toUpperCase(),
-        price: response?.response?.data[0]?.last,
-      });
-    } else if (response.url.includes("mexc")) {
-      const regex = /symbol=(.*)/i;
-      const match = response.url.match(regex);
-      const symbol = match[1].replace(/(USDT|usdt)/, "-$1");
-      finalSpot.push({
-        name: "MEXC",
-        pair: symbol.toUpperCase(),
-        price: response?.response?.bidPrice,
-      });
-    } else if (response.url.includes("huobi")) {
-      const regex = /symbol=(.*)/i;
-      const match = response.url.match(regex);
-      const symbol = match[1].replace(/(USDT|usdt)/, "-$1");
-      finalSpot.push({
-        name: "HUOBI",
-        pair: symbol.toUpperCase(),
-        price: response?.response?.tick?.data[0]?.price,
-      });
-    } else if (response.url.includes("bybit")) {
-      const regex = /symbol=([^&]+)/;
-
-      // Match the symbol value using the regex
-      const match = response.url.match(regex);
-      const symbol = match[1].replace(/(USDT|usdt)/, "-$1");
-
-      finalSpot.push({
-        name: "BYBIT",
-        pair: symbol.toUpperCase(),
-        price: response?.response?.result?.list[0]?.price,
-      });
-    } else if (response.url.includes("kucoin")) {
-      const regex = /symbol=(.*)/i;
-      const match = response.url.match(regex);
-      finalSpot.push({
-        name: "KUCOIN",
-        pair: match[1].toUpperCase(),
-        price: response?.response?.data?.price,
-      });
-    }
-  });
 
   fetchDerivativeFetchRateHistoryDetails.map((response) => {
     if (response.url.includes("okx")) {
@@ -219,7 +234,7 @@ async function fetchBulkArray(
       const match = response.url.match(regex);
       const symmbol = match[1].replace("-SWAP", "");
 
-      const fourteenDaysAgo = moment().subtract(14, "days");
+      const fourteenDaysAgo = moment().subtract(parseInt(duration), "days");
 
       const filteredData = response?.response?.data?.filter((entry) => {
         const fundingTime = moment(parseInt(entry.fundingTime));
@@ -231,8 +246,8 @@ async function fetchBulkArray(
         const fundingDate = moment(parseInt(entry.fundingTime)).format("DD/MM");
         if (
           !(fundingDate in groupedData) ||
-          moment(parseInt(groupedData[fundingDate].fundingTime)).isBefore(
-            moment(parseInt(entry.fundingTime))
+          moment(groupedData[fundingDate].fundingTime).isBefore(
+            moment(entry.fundingTime)
           )
         ) {
           groupedData[fundingDate] = entry;
@@ -240,7 +255,7 @@ async function fetchBulkArray(
       });
 
       const output = Object.values(groupedData).map((entry) => ({
-        fundingRate: (parseFloat(entry.fundingRate) * 100).toFixed(3),
+        fundingRate: (parseFloat(entry.fundingRate) * 100 * 365).toFixed(3),
         fundingDate: moment(parseInt(entry.fundingTime)).format("DD/MM"),
       }));
       // process the response and
@@ -258,7 +273,7 @@ async function fetchBulkArray(
       const resultList = response?.response?.data?.resultList;
 
       const today = moment().startOf("day");
-      const last14Days = moment().subtract(14, "days").startOf("day");
+      const last14Days = moment().subtract(parseInt(duration), "days").startOf("day");
 
       const filteredData = resultList?.filter((item) => {
         const fundingDate = moment(item.settleTime);
@@ -276,7 +291,7 @@ async function fetchBulkArray(
         }
       });
       const output = Object.values(groupedData).map((entry) => ({
-        fundingRate: (parseFloat(entry.fundingRate) * 100).toFixed(3),
+        fundingRate: (parseFloat(entry.fundingRate) * 100 * 365).toFixed(3),
         fundingDate: moment(entry.settleTime).format("DD/MM"),
       }));
 
@@ -291,7 +306,7 @@ async function fetchBulkArray(
       const match = response.url.match(regex);
 
       // Extracting funding rates for the last 14 days
-      const fourteenDaysAgo = moment().subtract(14, "days");
+      const fourteenDaysAgo = moment().subtract(parseInt(duration), "days");
       const filteredData = response?.response?.data?.data?.filter((entry) =>
         moment(parseInt(entry.funding_time)).isAfter(fourteenDaysAgo)
       );
@@ -309,7 +324,7 @@ async function fetchBulkArray(
           )
         ) {
           fundingRatesByDate[date] = {
-            fundingRate: (parseFloat(rate) * 100).toFixed(3),
+            fundingRate: (parseFloat(rate) * 100 * 365).toFixed(3),
             fundingDate: date,
           };
         }
@@ -335,7 +350,7 @@ async function fetchBulkArray(
       const today = moment();
 
       // Get the date 14 days ago
-      const fourteenDaysAgo = moment().subtract(14, "days");
+      const fourteenDaysAgo = moment().subtract(parseInt(duration), "days");
 
       // Filter funding rates within the last 14 days
       const filteredData = list?.filter((item) =>
@@ -357,7 +372,7 @@ async function fetchBulkArray(
           )
         ) {
           groupedByDate[formattedDate] = {
-            fundingRate: (parseFloat(item.fundingRate) * 100).toFixed(3),
+            fundingRate: (parseFloat(item.fundingRate) * 100 * 365).toFixed(3),
             fundingDate: formattedDate,
           };
         }
@@ -381,7 +396,7 @@ async function fetchBulkArray(
 
       // Filter data for the last 14 days
       const currentDate = moment();
-      const fourteenDaysAgo = moment().subtract(14, "days");
+      const fourteenDaysAgo = moment().subtract(parseInt(duration), "days");
 
       const filteredData = response?.response?.data?.filter((entry) => {
         const entryDate = moment(entry.timepoint);
@@ -402,7 +417,7 @@ async function fetchBulkArray(
 
       // Prepare output in desired format
       const output = Object.values(groupedData).map((entry) => ({
-        fundingRate: (parseFloat(entry.fundingRate) * 100).toFixed(3),
+        fundingRate: (parseFloat(entry.fundingRate) * 100 * 365).toFixed(3),
         fundingDate: formatTimestamp(entry.timepoint),
       }));
       finalDerivativeFundingRateHistory.push({
@@ -412,19 +427,20 @@ async function fetchBulkArray(
       });
     }
   });
-  const combinedData = finalSpot.map((spot) => {
-    const historyItem = finalDerivativeFundingRateHistory.find(
-      (item) => item.pair === spot.pair && item.name == spot.name
-    );
-    return {
-      name: spot.name,
-      pair: spot.pair,
-      price: spot.price,
-      history: historyItem ? historyItem.history : [],
-    };
-  });
 
-  return combinedData;
+  // const combinedData = finalSpot.map((spot) => {
+  //   const historyItem = finalDerivativeFundingRateHistory.find(
+  //     (item) => item.pair === spot.pair && item.name == spot.name
+  //   );
+  //   return {
+  //     name: spot.name,
+  //     pair: spot.pair,
+  //     price: spot.price,
+  //     history: historyItem ? historyItem.history : [],
+  //   };
+  // });
+
+  return finalDerivativeFundingRateHistory;
 }
 
 module.exports = fetchBulkArray;

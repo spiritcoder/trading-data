@@ -47,37 +47,24 @@
       <form action="" method="get">
         <div class="row">
           <div class="col-md-5">
-            <label for="coins">Trading Pairs:</label>
-            <select name="coins" id="coins" class="form-control" multiple>
-              <option value="BTC">BTC-USDT</option>
-              <option value="ETH">ETH-USDT</option>
-              <option value="BNB">BNB-USDT</option>
-              <option value="SOL">SOL-USDT</option>
-              <option value="ADA">ADA-USDT</option>
-              <option value="DOT">DOT-USDT</option>
-              <option value="LINK">LINK-USDT</option>
-              <option value="LUNA">LUNA-USDT</option>
-              <option value="AVAX">AVAX-USDT</option>
-              <option value="MATIC">MATIC-USDT</option>
-            </select>
-          </div>
-          <div class="col-md-5">
-            <label for="exchanges">Exchanges:</label>
-            <select
-              name="exchanges"
-              id="exchanges"
-              class="form-control"
-              multiple
-            >
+            <label for="exchange">Select Exchange</label>
+            <select name="exchange" class="form-control" id="exchange">
               <option value="kucoin">KuCoin</option>
               <option value="huobi">Huobi</option>
               <option value="mexc">MEXC</option>
               <option value="bybit">Bybit</option>
               <option value="okx">OKX</option>
-              <!-- Add more options as needed -->
+            </select>
+          </div>
+          <div class="col-md-5">
+            <label for="duration">Select Preferred History Range</label>
+            <select name="duration"  id="duration" class="form-control">
+              <option value="7">7 days</option>
+              <option value="14">14 days</option>
             </select>
           </div>
           <div class="col-md-2 align-items-center justify-content-center">
+            <label ></label>
             <button type="submit" class="btn btn-primary btn-block">
               Submit
             </button>
@@ -85,18 +72,21 @@
         </div>
       </form>
     </div>
-    <table class="table table-bordered table-striped">
+    <table class="table table-bordered table-striped" id="myTable">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Pair</th>
-          <th>Price</th>
-          <% const uniqueDates = []; %> <% data.forEach(item => { %> <%
-          item.history.forEach(historyItem => { %> <% if
-          (!uniqueDates.includes(historyItem.fundingDate)) { %> <%
-          uniqueDates.push(historyItem.fundingDate); %>
-          <th><%= historyItem.fundingDate %></th>
-          <% } %> <% }); %> <% }); %>
+          <th class="sortable-header">Name</th>
+          <th class="sortable-header">Pair</th>
+          <% const uniqueDates = []; %> 
+          <% data.forEach(item => { %> 
+            <% item.history.forEach(historyItem => { %> 
+              <% if (!uniqueDates.includes(historyItem.fundingDate)) { %> 
+                <% uniqueDates.push(historyItem.fundingDate); %>
+                <th class="sortable-header"><%= historyItem.fundingDate %></th>
+              <% } %> 
+            <% }); %> 
+          <% }); %>
+          <th class="sortable-header">Average Funding Rate</th> <!-- New column for average funding rate -->
         </tr>
       </thead>
       <tbody>
@@ -104,66 +94,66 @@
         <tr>
           <td><%= item.name %></td>
           <td><%= item.pair %></td>
-          <td><%= item.price %></td>
-          <% uniqueDates.forEach(date => { %> <% const historyItem =
-          item.history.find(hist => hist.fundingDate === date); %>
-          <td><%= historyItem ? historyItem.fundingRate + '%' : 'N/A' %></td>
+          <% uniqueDates.forEach(date => { %> 
+            <% const historyItem = item.history.find(hist => hist.fundingDate === date); %>
+            <td><%= historyItem ? historyItem.fundingRate + '%' : 'N/A' %></td>
           <% }); %>
+          <!-- Calculate average funding rate for each row -->
+          <% const fundingRates = item.history.map(hist => parseFloat(hist.fundingRate)); %>
+          <% const sumFundingRates = fundingRates.reduce((acc, rate) => acc + rate, 0); %>
+          <% const averageFundingRate = fundingRates.length > 0 ? (sumFundingRates / fundingRates.length).toFixed(2) : NaN; %>
+          <td><%= !isNaN(averageFundingRate) ? averageFundingRate + '%' : 'N/A' %></td>
         </tr>
         <% }); %>
       </tbody>
     </table>
 
     <script>
-      let sortOrder = 1; // 1 for ascending, -1 for descending
-      let sortColumn = 0; // Default sort by first column
-
-      function sortTable(columnIndex) {
-        const table = document.querySelector("table");
-        const tbody = table.querySelector("tbody");
-        const rows = Array.from(tbody.querySelectorAll("tr"));
-
-        // Toggle sorting order if the same column is clicked
-        if (sortColumn === columnIndex) {
-          sortOrder *= -1;
-        } else {
-          // Reset sort order icon for previously sorted column
-          const prevSortIcon = document.getElementById(
-            `col${sortColumn}SortIcon`
-          );
-          if (prevSortIcon) {
-            prevSortIcon.innerHTML = "";
-          }
-          sortOrder = 1; // Reset to default ascending order
-          sortColumn = columnIndex;
-        }
-
-        // Update sort icon
-        const sortIcon = document.getElementById(`col${columnIndex}SortIcon`);
-        if (sortIcon) {
-          if (sortOrder === 1) {
-            sortIcon.innerHTML = "&uarr;"; // Up arrow
-          } else {
-            sortIcon.innerHTML = "&darr;"; // Down arrow
-          }
-        }
-
-        // Sort rows
-        rows.sort((a, b) => {
-          const textA = a.cells[columnIndex].textContent.trim();
-          const textB = b.cells[columnIndex].textContent.trim();
-
-          if (!isNaN(textA) && !isNaN(textB)) {
-            return sortOrder * (parseFloat(textA) - parseFloat(textB));
-          } else {
-            return sortOrder * textA.localeCompare(textB);
-          }
+      document.addEventListener("DOMContentLoaded", function () {
+        const headers = document.querySelectorAll(".sortable-header");
+        headers.forEach((header, index) => {
+          header.addEventListener("click", () => {
+            sortColumn(index);
+          });
         });
 
-        // Re-append sorted rows
-        tbody.innerHTML = "";
-        rows.forEach((row) => tbody.appendChild(row));
-      }
+        function sortColumn(index) {
+          const table = document.getElementById("myTable");
+          const rows = Array.from(table.querySelectorAll("tbody tr"));
+          const isDescending =
+            table.rows[0].cells[index].classList.contains("desc");
+
+          rows.sort((a, b) => {
+            const aValue = getValue(a.cells[index]);
+            const bValue = getValue(b.cells[index]);
+
+            if (aValue < bValue) return isDescending ? 1 : -1;
+            if (aValue > bValue) return isDescending ? -1 : 1;
+            return 0;
+          });
+
+          if (isDescending) {
+            table.rows[0].cells[index].classList.remove("desc");
+            table.rows[0].cells[index].classList.add("asc");
+          } else {
+            table.rows[0].cells[index].classList.remove("asc");
+            table.rows[0].cells[index].classList.add("desc");
+          }
+
+          rows.forEach((row) => {
+            table.querySelector("tbody").appendChild(row);
+          });
+        }
+
+        function getValue(cell) {
+          const text = cell.textContent || cell.innerText;
+          if (text.includes("%")) {
+            return parseFloat(text.replace("%", "").trim());
+          } else {
+            return isNaN(parseFloat(text)) ? text : parseFloat(text);
+          }
+        }
+      });
     </script>
   </body>
 </html>
